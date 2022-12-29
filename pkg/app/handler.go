@@ -7,32 +7,18 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/kkennymore/banking/service"
+	"github.com/kkennymore/banking/services"
 )
 
-/*create a struct to get customer details*/
-type Customer struct {
-	Name    string `json:"full_name" xml:"full_name"`
-	City    string `json:"city" xml:"city"`
-	ZipCode string `json:"zip_code" xml:"zip_code"`
-}
-
 type CustomerHandlers struct {
-	service service.CustomerService
+	service services.CustomerService
 }
 
 /*create a function to get all customers in xml*/
 func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	/*create a list of customers
-	Data mashaling
-	*/
-	customers := []Customer{ //get a slice of customers with dommy values initialization
-		{Name: "Kenneth", City: "Lagos", ZipCode: "234"},
-		{Name: "Jude", City: "Lagos", ZipCode: "234"},
-		{Name: "Faith", City: "Lagos", ZipCode: "234"},
-		{Name: "Micheal", City: "Abuja", ZipCode: "267"},
-		{Name: "Anthony", City: "Akure", ZipCode: "654"},
-	}
+	/*return data from stub*/
+	customers, _ := ch.service.GetAllCustomer()
+
 	/*check request header for data content type and return according to request*/
 	if r.Header.Get("Content-Type") == "application/xml" {
 		/*tell the header to set the right content type*/
@@ -48,10 +34,28 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 }
 
 /*get a single customer*/
-func getCustomer(w http.ResponseWriter, r *http.Request) {
+func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	id := vars["customer_id"]
+	customer, err := ch.service.GetCustomer(id)
+	if err != nil {
+		w.WriteHeader(err.Code)
+		fmt.Fprintf(w, err.Message)
 
-	fmt.Fprintf(w, vars["customer_id"])
+	} else {
+		/*check request header for data content type and return according to request*/
+		if r.Header.Get("Content-Type") == "application/xml" {
+			/*tell the header to set the right content type*/
+			w.Header().Add("Content-Type", "application/xml")
+			/*call the xml encoder which take an IO writer*/
+			xml.NewEncoder(w).Encode(customer)
+		} else {
+			/*tell the header to set the right content type*/
+			w.Header().Add("Content-Type", "application/json")
+			/*call the json encoder which take an IO writer*/
+			json.NewEncoder(w).Encode(customer)
+		}
+	}
 }
 
 /*Create customers*/
