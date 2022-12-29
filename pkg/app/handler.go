@@ -5,6 +5,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/kkennymore/banking/service"
 )
 
 /*create a struct to get customer details*/
@@ -14,13 +17,12 @@ type Customer struct {
 	ZipCode string `json:"zip_code" xml:"zip_code"`
 }
 
-/*the index function*/
-func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello world")
+type CustomerHandlers struct {
+	service service.CustomerService
 }
 
 /*create a function to get all customers in xml*/
-func getAllCustomers(w http.ResponseWriter, r *http.Request) {
+func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
 	/*create a list of customers
 	Data mashaling
 	*/
@@ -43,4 +45,16 @@ func getAllCustomers(w http.ResponseWriter, r *http.Request) {
 		/*call the json encoder which take an IO writer*/
 		json.NewEncoder(w).Encode(customers)
 	}
+}
+
+/*get a single customer*/
+func getCustomer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	fmt.Fprintf(w, vars["customer_id"])
+}
+
+/*Create customers*/
+func createCustomers(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Create customers")
 }
