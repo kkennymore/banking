@@ -2,12 +2,13 @@ package services
 
 import (
 	"github.com/kkennymore/banking/domain"
+	"github.com/kkennymore/banking/dto"
 	"github.com/kkennymore/banking/errorException"
 )
 
 type CustomerService interface {
 	GetAllCustomer() ([]domain.Customer, error)
-	GetCustomer(string) (*domain.Customer, *errorException.AppError)
+	GetCustomer(string) (*dto.CustomerResponse, *errorException.AppError)
 }
 
 type DefaultCustomerService struct {
@@ -20,8 +21,15 @@ func (s DefaultCustomerService) GetAllCustomer() ([]domain.Customer, error) {
 }
 
 /*single customer service to rturn a customer data*/
-func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, *errorException.AppError) {
-	return s.repo.ById(id)
+func (s DefaultCustomerService) GetCustomer(id string) (*dto.CustomerResponse, *errorException.AppError) {
+	c, err := s.repo.ById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	response := c.ToDto()
+
+	return &response, nil
 }
 
 func NewCustomerService(repository domain.CustomerRepository) DefaultCustomerService {

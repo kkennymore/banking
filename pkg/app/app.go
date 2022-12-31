@@ -1,16 +1,27 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/kkennymore/banking/domain"
 	"github.com/kkennymore/banking/services"
 )
 
+func sanityCheck() {
+	if os.Getenv("SERVER_ADDRESS") == "" ||
+		os.Getenv("SERVER_PORT") == "" {
+		log.Fatal("Environment variables not defined")
+	}
+}
+
 func Runner() {
 
+	/*check if all the environment variables are properly loaded*/
+	sanityCheck()
 	/*Request multiplexer*/
 	//mux := http.NewServeMux()
 	router := mux.NewRouter()
@@ -27,5 +38,9 @@ func Runner() {
 	/*Post*/
 	router.HandleFunc("/customers", createCustomers).Methods(http.MethodPost)
 	/*starting the server*/
-	log.Fatal(http.ListenAndServe("localhost:4000", router))
+	fmt.Println("Server started")
+	address := os.Getenv("SERVER_ADDRESS")
+	port := os.Getenv("SERVER_PORT")
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), router))
 }
